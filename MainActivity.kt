@@ -57,6 +57,10 @@ class MainActivity : AppCompatActivity(), GameAdapter.Listener {
         bottom.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_games -> true
+                R.id.nav_calculator -> {
+                    startActivity(Intent(this, CalculatorActivity::class.java))
+                    true
+                }
                 R.id.nav_about -> {
                     startActivity(Intent(this, AboutActivity::class.java))
                     true
