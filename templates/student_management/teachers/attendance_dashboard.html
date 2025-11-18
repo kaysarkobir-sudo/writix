@@ -813,11 +813,7 @@
         };
 
         // Send to server
-        // Note: Update the URL below to match your Django URL configuration
-        // Example: If you have a URL pattern named 'teacher_attendance_mark', use: {% url "teacher_attendance_mark" %}
-        const saveUrl = window.location.pathname.replace(/\/$/, '') + '/mark/';
-
-        fetch(saveUrl, {
+        fetch('{% url "teacher_attendance_mark" %}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
