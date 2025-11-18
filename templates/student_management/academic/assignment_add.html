@@ -393,7 +393,14 @@
                 <div class="form-row">
                     <div class="form-group full-width">
                         <label for="id_title" class="form-label required">Assignment Title</label>
-                        {{ form.title }}
+                        <input type="text"
+                               id="id_title"
+                               name="title"
+                               class="form-input"
+                               maxlength="200"
+                               required
+                               value="{{ form.title.value|default:'' }}"
+                               placeholder="Enter assignment title">
                         {% if form.title.errors %}
                             <div class="error-message">{{ form.title.errors.0 }}</div>
                         {% endif %}
@@ -404,7 +411,14 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="id_student_class" class="form-label required">Class</label>
-                        {{ form.student_class }}
+                        <select id="id_student_class" name="student_class" class="form-select" required>
+                            <option value="">Select Class</option>
+                            {% for class in classes %}
+                            <option value="{{ class.id }}" {% if form.student_class.value == class.id %}selected{% endif %}>
+                                {{ class.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
                         {% if form.student_class.errors %}
                             <div class="error-message">{{ form.student_class.errors.0 }}</div>
                         {% endif %}
@@ -412,7 +426,14 @@
 
                     <div class="form-group">
                         <label for="id_section" class="form-label required">Section</label>
-                        {{ form.section }}
+                        <select id="id_section" name="section" class="form-select" required>
+                            <option value="">Select Section</option>
+                            {% for section in sections %}
+                            <option value="{{ section.id }}" {% if form.section.value == section.id %}selected{% endif %}>
+                                {{ section.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
                         {% if form.section.errors %}
                             <div class="error-message">{{ form.section.errors.0 }}</div>
                         {% endif %}
@@ -420,7 +441,14 @@
 
                     <div class="form-group">
                         <label for="id_subject" class="form-label required">Subject</label>
-                        {{ form.subject }}
+                        <select id="id_subject" name="subject" class="form-select" required>
+                            <option value="">Select Subject</option>
+                            {% for subject in subjects %}
+                            <option value="{{ subject.id }}" {% if form.subject.value == subject.id %}selected{% endif %}>
+                                {{ subject.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
                         {% if form.subject.errors %}
                             <div class="error-message">{{ form.subject.errors.0 }}</div>
                         {% endif %}
@@ -435,7 +463,12 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="id_assignment_date" class="form-label required">Assignment Date</label>
-                        {{ form.assignment_date }}
+                        <input type="date"
+                               id="id_assignment_date"
+                               name="assignment_date"
+                               class="form-input"
+                               required
+                               value="{{ form.assignment_date.value|default:'' }}">
                         {% if form.assignment_date.errors %}
                             <div class="error-message">{{ form.assignment_date.errors.0 }}</div>
                         {% endif %}
@@ -444,7 +477,12 @@
 
                     <div class="form-group">
                         <label for="id_submission_date" class="form-label required">Submission Date</label>
-                        {{ form.submission_date }}
+                        <input type="date"
+                               id="id_submission_date"
+                               name="submission_date"
+                               class="form-input"
+                               required
+                               value="{{ form.submission_date.value|default:'' }}">
                         {% if form.submission_date.errors %}
                             <div class="error-message">{{ form.submission_date.errors.0 }}</div>
                         {% endif %}
@@ -504,7 +542,11 @@
                 <div class="form-row">
                     <div class="form-group full-width">
                         <label for="id_note" class="form-label">Instructions/Notes</label>
-                        {{ form.note }}
+                        <textarea id="id_note"
+                                  name="note"
+                                  class="form-textarea"
+                                  rows="6"
+                                  placeholder="Enter any special instructions or notes for students">{{ form.note.value|default:'' }}</textarea>
                         {% if form.note.errors %}
                             <div class="error-message">{{ form.note.errors.0 }}</div>
                         {% endif %}
@@ -519,7 +561,10 @@
 
                 <div class="checkbox-group">
                     <div class="form-checkbox">
-                        {{ form.sms_notification }}
+                        <input type="checkbox"
+                               id="id_sms_notification"
+                               name="sms_notification"
+                               {% if form.sms_notification.value %}checked{% endif %}>
                         <label for="id_sms_notification">
                             <strong>Send SMS Notification</strong><br>
                             <small style="color: rgba(255, 255, 255, 0.7);">Send SMS to students and parents about this assignment</small>
@@ -527,7 +572,10 @@
                     </div>
 
                     <div class="form-checkbox">
-                        {{ form.email_notification }}
+                        <input type="checkbox"
+                               id="id_email_notification"
+                               name="email_notification"
+                               {% if form.email_notification.value %}checked{% endif %}>
                         <label for="id_email_notification">
                             <strong>Send Email Notification</strong><br>
                             <small style="color: rgba(255, 255, 255, 0.7);">Send email to students and parents about this assignment</small>
@@ -550,27 +598,13 @@
 </div>
 
 <script>
-    // Add CSS classes to form fields
+    // Set default dates on page load
     document.addEventListener('DOMContentLoaded', function() {
-        // Add form-input class to text inputs
-        document.querySelectorAll('input[type="text"], input[type="date"]').forEach(field => {
-            field.classList.add('form-input');
-        });
-
-        // Add form-select class to select fields
-        document.querySelectorAll('select').forEach(field => {
-            field.classList.add('form-select');
-        });
-
-        // Add form-textarea class to textareas
-        document.querySelectorAll('textarea').forEach(field => {
-            field.classList.add('form-textarea');
-        });
-
         // Set default assignment date to today
         const assignmentDateField = document.getElementById('id_assignment_date');
         if (assignmentDateField && !assignmentDateField.value) {
-            assignmentDateField.valueAsDate = new Date();
+            const today = new Date();
+            assignmentDateField.value = today.toISOString().split('T')[0];
         }
 
         // Set default submission date to 7 days from now
@@ -578,7 +612,7 @@
         if (submissionDateField && !submissionDateField.value) {
             const nextWeek = new Date();
             nextWeek.setDate(nextWeek.getDate() + 7);
-            submissionDateField.valueAsDate = nextWeek;
+            submissionDateField.value = nextWeek.toISOString().split('T')[0];
         }
     });
 
