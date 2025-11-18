@@ -672,6 +672,22 @@
 </div>
 
 <script>
+    // Helper function to get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     // Attendance data storage
     let attendanceData = {};
 
@@ -797,15 +813,24 @@
         };
 
         // Send to server
-        fetch('{% url "teacher_attendance_mark" %}', {
+        // Note: Update the URL below to match your Django URL configuration
+        // Example: If you have a URL pattern named 'teacher_attendance_mark', use: {% url "teacher_attendance_mark" %}
+        const saveUrl = window.location.pathname.replace(/\/$/, '') + '/mark/';
+
+        fetch(saveUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
+                'X-CSRFToken': getCookie('csrftoken')
             },
             body: JSON.stringify(data)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Server returned ' + response.status);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 alert('✓ Attendance saved successfully!');
@@ -817,7 +842,7 @@
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('✗ Network error. Please try again.');
+            alert('✗ Network error. Please try again. Error: ' + error.message);
         });
     }
 
