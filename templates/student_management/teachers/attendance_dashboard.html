@@ -1,0 +1,827 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Teacher Attendance Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 40% 20%, rgba(255, 182, 193, 0.3) 0%, transparent 50%);
+        animation: backgroundPulse 15s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes backgroundPulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.8; transform: scale(1.1); }
+    }
+
+    .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow:
+            0 8px 32px 0 rgba(31, 38, 135, 0.37),
+            inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+        padding: 30px;
+        margin-bottom: 30px;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
+        animation: fadeIn 0.6s ease-out 0.1s both;
+    }
+
+    .header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        margin-bottom: 10px;
+    }
+
+    .header .date-display {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.2rem;
+        font-weight: 500;
+    }
+
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+        animation: fadeIn 0.6s ease-out 0.2s both;
+    }
+
+    .glass-chip {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .glass-chip::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .glass-chip:hover::before {
+        left: 100%;
+    }
+
+    .glass-chip:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .chip-title {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+    }
+
+    .chip-value {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .chip-subtitle {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.85rem;
+        margin-top: 5px;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        margin-top: 12px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4ade80, #22c55e);
+        border-radius: 4px;
+        transition: width 0.6s ease;
+        box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+    }
+
+    .controls-section {
+        animation: fadeIn 0.6s ease-out 0.3s both;
+    }
+
+    .controls-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+        align-items: center;
+    }
+
+    .search-box {
+        flex: 1;
+        min-width: 250px;
+        position: relative;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 14px 20px 14px 45px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        color: white;
+        font-size: 1rem;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .search-box input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .search-box input:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    }
+
+    .search-box::before {
+        content: '🔍';
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.2rem;
+    }
+
+    .filter-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+        font-weight: 500;
+        backdrop-filter: blur(10px);
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .quick-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .btn-primary {
+        padding: 12px 28px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #f87171, #ef4444);
+    }
+
+    .teachers-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+        animation: fadeIn 0.6s ease-out 0.4s both;
+    }
+
+    .teacher-card {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        padding: 24px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .teacher-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .teacher-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .teacher-card:hover::after {
+        opacity: 1;
+    }
+
+    .teacher-card.marked-present {
+        background: rgba(74, 222, 128, 0.15);
+        border-color: rgba(74, 222, 128, 0.4);
+    }
+
+    .teacher-card.marked-absent {
+        background: rgba(248, 113, 113, 0.15);
+        border-color: rgba(248, 113, 113, 0.4);
+    }
+
+    .teacher-card.marked-late {
+        background: rgba(251, 191, 36, 0.15);
+        border-color: rgba(251, 191, 36, 0.4);
+    }
+
+    .teacher-card.marked-leave {
+        background: rgba(147, 197, 253, 0.15);
+        border-color: rgba(147, 197, 253, 0.4);
+    }
+
+    .teacher-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .teacher-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 700;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .teacher-info h3 {
+        color: white;
+        font-size: 1.2rem;
+        margin-bottom: 4px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .teacher-info p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+    }
+
+    .teacher-details {
+        margin-bottom: 20px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.9rem;
+    }
+
+    .detail-label {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-present {
+        background: rgba(74, 222, 128, 0.3);
+        color: #4ade80;
+        border: 1px solid rgba(74, 222, 128, 0.5);
+    }
+
+    .badge-absent {
+        background: rgba(248, 113, 113, 0.3);
+        color: #f87171;
+        border: 1px solid rgba(248, 113, 113, 0.5);
+    }
+
+    .badge-late {
+        background: rgba(251, 191, 36, 0.3);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.5);
+    }
+
+    .badge-leave {
+        background: rgba(147, 197, 253, 0.3);
+        color: #93c5fd;
+        border: 1px solid rgba(147, 197, 253, 0.5);
+    }
+
+    .badge-pending {
+        background: rgba(156, 163, 175, 0.3);
+        color: #9ca3af;
+        border: 1px solid rgba(156, 163, 175, 0.5);
+    }
+
+    .attendance-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .attendance-btn {
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-align: center;
+        backdrop-filter: blur(5px);
+    }
+
+    .btn-present {
+        background: rgba(74, 222, 128, 0.2);
+        color: #4ade80;
+    }
+
+    .btn-present:hover, .btn-present.active {
+        background: rgba(74, 222, 128, 0.4);
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+    }
+
+    .btn-absent {
+        background: rgba(248, 113, 113, 0.2);
+        color: #f87171;
+    }
+
+    .btn-absent:hover, .btn-absent.active {
+        background: rgba(248, 113, 113, 0.4);
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(248, 113, 113, 0.3);
+    }
+
+    .btn-late {
+        background: rgba(251, 191, 36, 0.2);
+        color: #fbbf24;
+    }
+
+    .btn-late:hover, .btn-late.active {
+        background: rgba(251, 191, 36, 0.4);
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+    }
+
+    .btn-leave {
+        background: rgba(147, 197, 253, 0.2);
+        color: #93c5fd;
+    }
+
+    .btn-leave:hover, .btn-leave.active {
+        background: rgba(147, 197, 253, 0.4);
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(147, 197, 253, 0.3);
+    }
+
+    .save-section {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 100;
+        animation: fadeIn 0.6s ease-out 0.7s both;
+    }
+
+    .save-btn {
+        padding: 18px 36px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50px;
+        color: white;
+        cursor: pointer;
+        font-size: 1.1rem;
+        font-weight: 700;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .save-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+    }
+
+    @media (max-width: 768px) {
+        .header h1 {
+            font-size: 2rem;
+        }
+
+        .stats-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .teachers-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .controls-row {
+            flex-direction: column;
+        }
+
+        .search-box {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>📊 Teacher Attendance Dashboard</h1>
+        <div class="date-display">
+            📅 <span id="currentDate"></span>
+        </div>
+    </div>
+
+    <!-- Stats Dashboard -->
+    <div class="stats-container">
+        <div class="glass-chip">
+            <div class="chip-title">Total Teachers</div>
+            <div class="chip-value" id="totalTeachers">{{ teachers|length }}</div>
+            <div class="chip-subtitle">Active faculty members</div>
+        </div>
+
+        <div class="glass-chip">
+            <div class="chip-title">Marked Today</div>
+            <div class="chip-value" id="markedCount">0</div>
+            <div class="chip-subtitle">Attendance recorded</div>
+        </div>
+
+        <div class="glass-chip">
+            <div class="chip-title">Pending</div>
+            <div class="chip-value" id="pendingCount">{{ teachers|length }}</div>
+            <div class="chip-subtitle">Awaiting marking</div>
+        </div>
+
+        <div class="glass-chip">
+            <div class="chip-title">Attendance Rate</div>
+            <div class="chip-value" id="attendanceRate">0%</div>
+            <div class="chip-subtitle">Present today</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls Section -->
+    <div class="glass-card controls-section">
+        <div class="quick-actions">
+            <button class="btn-primary btn-success" onclick="markAllPresent()">✓ Mark All Present</button>
+            <button class="btn-primary btn-danger" onclick="markAllAbsent()">✗ Mark All Absent</button>
+        </div>
+
+        <div class="controls-row">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search by name or department..." onkeyup="filterTeachers()">
+            </div>
+
+            <div class="filter-group">
+                <button class="filter-btn active" onclick="filterStatus('all')">All</button>
+                <button class="filter-btn" onclick="filterStatus('present')">Present</button>
+                <button class="filter-btn" onclick="filterStatus('absent')">Absent</button>
+                <button class="filter-btn" onclick="filterStatus('late')">Late</button>
+                <button class="filter-btn" onclick="filterStatus('leave')">Leave</button>
+                <button class="filter-btn" onclick="filterStatus('pending')">Pending</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teachers Grid -->
+    <div class="teachers-grid" id="teachersGrid">
+        {% for teacher in teachers %}
+        <div class="teacher-card"
+             data-teacher-id="{{ teacher.id }}"
+             data-name="{{ teacher.first_name }} {{ teacher.last_name }}"
+             data-department="{{ teacher.department.name|default:'N/A' }}"
+             data-status="pending">
+
+            <div class="teacher-header">
+                <div class="teacher-avatar">
+                    {{ teacher.first_name.0 }}{{ teacher.last_name.0 }}
+                </div>
+                <div class="teacher-info">
+                    <h3>{{ teacher.first_name }} {{ teacher.last_name }}</h3>
+                    <p>{{ teacher.department.name|default:'No Department' }}</p>
+                </div>
+            </div>
+
+            <div class="teacher-details">
+                <div class="detail-row">
+                    <span class="detail-label">Employee ID:</span>
+                    <span>{{ teacher.employee_id|default:'N/A' }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="status-badge badge-pending" id="badge-{{ teacher.id }}">Pending</span>
+                </div>
+            </div>
+
+            <div class="attendance-actions">
+                <button class="attendance-btn btn-present"
+                        onclick="markAttendance({{ teacher.id }}, 'present', this)">
+                    ✓ Present
+                </button>
+                <button class="attendance-btn btn-absent"
+                        onclick="markAttendance({{ teacher.id }}, 'absent', this)">
+                    ✗ Absent
+                </button>
+                <button class="attendance-btn btn-late"
+                        onclick="markAttendance({{ teacher.id }}, 'late', this)">
+                    ⏰ Late
+                </button>
+                <button class="attendance-btn btn-leave"
+                        onclick="markAttendance({{ teacher.id }}, 'leave', this)">
+                    📅 Leave
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="glass-card">
+            <p style="color: white; text-align: center; font-size: 1.2rem;">
+                No teachers found in the system.
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Save Button -->
+    <div class="save-section">
+        <button class="save-btn" onclick="saveAttendance()">
+            💾 Save Attendance
+        </button>
+    </div>
+</div>
+
+<script>
+    // Attendance data storage
+    let attendanceData = {};
+
+    // Display current date
+    document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    // Mark individual attendance
+    function markAttendance(teacherId, status, button) {
+        attendanceData[teacherId] = status;
+
+        const card = button.closest('.teacher-card');
+        const badge = document.getElementById('badge-' + teacherId);
+
+        // Remove all status classes
+        card.classList.remove('marked-present', 'marked-absent', 'marked-late', 'marked-leave');
+
+        // Add new status class
+        card.classList.add('marked-' + status);
+        card.setAttribute('data-status', status);
+
+        // Update badge
+        badge.className = 'status-badge badge-' + status;
+        badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+
+        // Remove active class from all buttons in this card
+        card.querySelectorAll('.attendance-btn').forEach(btn => btn.classList.remove('active'));
+
+        // Add active class to clicked button
+        button.classList.add('active');
+
+        updateStats();
+    }
+
+    // Mark all present
+    function markAllPresent() {
+        document.querySelectorAll('.teacher-card').forEach(card => {
+            const teacherId = card.getAttribute('data-teacher-id');
+            const presentBtn = card.querySelector('.btn-present');
+            markAttendance(parseInt(teacherId), 'present', presentBtn);
+        });
+    }
+
+    // Mark all absent
+    function markAllAbsent() {
+        document.querySelectorAll('.teacher-card').forEach(card => {
+            const teacherId = card.getAttribute('data-teacher-id');
+            const absentBtn = card.querySelector('.btn-absent');
+            markAttendance(parseInt(teacherId), 'absent', absentBtn);
+        });
+    }
+
+    // Update statistics
+    function updateStats() {
+        const total = document.querySelectorAll('.teacher-card').length;
+        const marked = Object.keys(attendanceData).length;
+        const pending = total - marked;
+
+        // Count present
+        const presentCount = Object.values(attendanceData).filter(s => s === 'present').length;
+        const attendanceRate = total > 0 ? Math.round((presentCount / total) * 100) : 0;
+
+        document.getElementById('markedCount').textContent = marked;
+        document.getElementById('pendingCount').textContent = pending;
+        document.getElementById('attendanceRate').textContent = attendanceRate + '%';
+        document.getElementById('progressBar').style.width = attendanceRate + '%';
+    }
+
+    // Filter teachers
+    function filterTeachers() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const cards = document.querySelectorAll('.teacher-card');
+
+        cards.forEach(card => {
+            const name = card.getAttribute('data-name').toLowerCase();
+            const department = card.getAttribute('data-department').toLowerCase();
+
+            if (name.includes(searchTerm) || department.includes(searchTerm)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // Filter by status
+    function filterStatus(status) {
+        const cards = document.querySelectorAll('.teacher-card');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        // Update active button
+        filterBtns.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        cards.forEach(card => {
+            const cardStatus = card.getAttribute('data-status');
+
+            if (status === 'all' || cardStatus === status) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // Save attendance
+    function saveAttendance() {
+        const date = new Date().toISOString().split('T')[0];
+
+        if (Object.keys(attendanceData).length === 0) {
+            alert('Please mark at least one teacher\'s attendance before saving.');
+            return;
+        }
+
+        // Prepare data for submission
+        const data = {
+            date: date,
+            attendance: attendanceData
+        };
+
+        // Send to server
+        fetch('{% url "teacher_attendance_mark" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✓ Attendance saved successfully!');
+                attendanceData = {};
+                location.reload();
+            } else {
+                alert('✗ Error saving attendance: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('✗ Network error. Please try again.');
+        });
+    }
+
+    // Initialize stats
+    updateStats();
+</script>
+{% endblock %}

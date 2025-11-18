@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.id %}Edit{% else %}Add{% endif %} Timetable{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>{% if form.instance.id %}Edit{% else %}Add New{% endif %} Timetable</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label">Timetable Name *</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger">{{ form.name.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">e.g., "Weekly Timetable - Grade 10A"</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_academic_year" class="form-label">Academic Year *</label>
+                            {{ form.academic_year }}
+                            {% if form.academic_year.errors %}
+                                <div class="text-danger">{{ form.academic_year.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_academic_class" class="form-label">Academic Class *</label>
+                                    {{ form.academic_class }}
+                                    {% if form.academic_class.errors %}
+                                        <div class="text-danger">{{ form.academic_class.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_section" class="form-label">Section</label>
+                                    {{ form.section }}
+                                    {% if form.section.errors %}
+                                        <div class="text-danger">{{ form.section.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_effective_from" class="form-label">Effective From *</label>
+                                    {{ form.effective_from }}
+                                    {% if form.effective_from.errors %}
+                                        <div class="text-danger">{{ form.effective_from.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_effective_to" class="form-label">Effective To</label>
+                                    {{ form.effective_to }}
+                                    {% if form.effective_to.errors %}
+                                        <div class="text-danger">{{ form.effective_to.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="id_is_active">
+                                    Is Active
+                                </label>
+                            </div>
+                            {% if form.is_active.errors %}
+                                <div class="text-danger">{{ form.is_active.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'timetable_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Timetable
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add form-control class to form fields
+    document.querySelectorAll('input[type="text"], input[type="date"], select, textarea').forEach(field => {
+        field.classList.add('form-control');
+    });
+
+    document.querySelectorAll('input[type="checkbox"]').forEach(field => {
+        field.classList.add('form-check-input');
+    });
+</script>
+{% endblock %}
