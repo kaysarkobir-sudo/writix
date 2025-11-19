@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Preview Books - Bulk Import{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.3) 0%, transparent 50%);
+        animation: backgroundPulse 15s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes backgroundPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+
+    .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        margin-bottom: 10px;
+    }
+
+    .success-message {
+        background: rgba(74, 222, 128, 0.15);
+        border: 1px solid rgba(74, 222, 128, 0.3);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .success-icon {
+        font-size: 4rem;
+        margin-bottom: 10px;
+    }
+
+    .success-text {
+        color: #4ade80;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 10px;
+        margin-top: 20px;
+    }
+
+    .data-table thead th {
+        color: white;
+        font-weight: 600;
+        text-align: left;
+        padding: 15px 10px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+    }
+
+    .data-table thead th:first-child {
+        border-radius: 12px 0 0 12px;
+    }
+
+    .data-table thead th:last-child {
+        border-radius: 0 12px 12px 0;
+    }
+
+    .data-table tbody tr {
+        background: rgba(255, 255, 255, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .data-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .data-table tbody td {
+        padding: 15px 10px;
+        color: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 0.9rem;
+    }
+
+    .data-table tbody tr td:first-child {
+        border-radius: 12px 0 0 12px;
+    }
+
+    .data-table tbody tr td:last-child {
+        border-radius: 0 12px 12px 0;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-success {
+        background: rgba(34, 197, 94, 0.3);
+        border: 1px solid rgba(34, 197, 94, 0.5);
+        color: #4ade80;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 14px 35px;
+        border-radius: 12px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+    }
+
+    .btn-secondary {
+        background: rgba(156, 163, 175, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .warning-box {
+        background: rgba(245, 158, 11, 0.15);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+
+    .warning-title {
+        color: #fbbf24;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .warning-content {
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .data-table {
+            display: block;
+            overflow-x: auto;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>👀 Preview Books</h1>
+    </div>
+
+    <div class="success-message">
+        <div class="success-icon">✅</div>
+        <div class="success-text">
+            File validated successfully! Found {{ total_books }} book(s) ready to import.
+        </div>
+    </div>
+
+    <div class="warning-box">
+        <div class="warning-title">
+            ⚠️ Please Review Before Importing
+        </div>
+        <div class="warning-content">
+            Check the data below carefully. Once imported, these books will be added to your library. Make sure all information is correct.
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <h2 style="color: white; margin-bottom: 20px;">Books to Import ({{ total_books }})</h2>
+
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Book Name</th>
+                        <th>Author</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Publisher</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in books_data %}
+                    <tr>
+                        <td><strong>{{ forloop.counter }}</strong></td>
+                        <td><strong>{{ book.name }}</strong></td>
+                        <td>{{ book.author }}</td>
+                        <td>{{ book.category|default:"—" }}</td>
+                        <td>৳{{ book.price }}</td>
+                        <td>{{ book.quantity }}</td>
+                        <td>{{ book.publisher|default:"—" }}</td>
+                        <td><span class="badge badge-success">Ready</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <form method="post" action="{% url 'bulk_book_import' %}" id="importForm">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="import">
+            <input type="hidden" name="books_data" value="{{ books_data|safe }}">
+
+            <div class="button-group">
+                <a href="{% url 'bulk_book_import' %}" class="btn btn-secondary">
+                    ← Back to Upload
+                </a>
+                <button type="submit" class="btn btn-success" id="confirmBtn">
+                    ✔️ Confirm & Import {{ total_books }} Book(s)
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('importForm').addEventListener('submit', function(e) {
+        const confirmBtn = document.getElementById('confirmBtn');
+        confirmBtn.innerHTML = '⏳ Importing...';
+        confirmBtn.disabled = true;
+
+        // Create hidden form data
+        const booksData = {{ books_data|safe }};
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'books_json';
+        input.value = JSON.stringify(booksData);
+        this.appendChild(input);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,511 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bulk Book Import{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.3) 0%, transparent 50%);
+        animation: backgroundPulse 15s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes backgroundPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+
+    .container {
+        position: relative;
+        z-index: 1;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
+        animation: fadeInDown 0.6s ease-out;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        margin-bottom: 10px;
+    }
+
+    .header p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.1rem;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        padding: 40px;
+        margin-bottom: 30px;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .step-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 40px;
+        padding: 0 20px;
+    }
+
+    .step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+    }
+
+    .step::after {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.2);
+        z-index: -1;
+    }
+
+    .step:last-child::after {
+        display: none;
+    }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .step.active .step-number {
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+        border-color: transparent;
+    }
+
+    .step-label {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+    }
+
+    .step.active .step-label {
+        color: white;
+        font-weight: 600;
+    }
+
+    .section-title {
+        color: white;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .download-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .btn {
+        padding: 14px 28px;
+        border-radius: 12px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: none;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+    }
+
+    .btn-info {
+        background: linear-gradient(135deg, #06b6d4, #0891b2);
+    }
+
+    .btn-secondary {
+        background: rgba(156, 163, 175, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .upload-area {
+        border: 3px dashed rgba(255, 255, 255, 0.3);
+        border-radius: 16px;
+        padding: 60px 30px;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .upload-area:hover, .upload-area.drag-over {
+        border-color: #4ade80;
+        background: rgba(74, 222, 128, 0.1);
+    }
+
+    .upload-icon {
+        font-size: 5rem;
+        margin-bottom: 20px;
+    }
+
+    .upload-text {
+        color: white;
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
+
+    .upload-hint {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.95rem;
+    }
+
+    .file-input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        cursor: pointer;
+    }
+
+    .selected-file {
+        margin-top: 20px;
+        padding: 20px;
+        background: rgba(74, 222, 128, 0.15);
+        border: 1px solid rgba(74, 222, 128, 0.3);
+        border-radius: 12px;
+        color: #4ade80;
+        font-weight: 600;
+        display: none;
+    }
+
+    .info-box {
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 30px;
+    }
+
+    .info-box-title {
+        color: #60a5fa;
+        font-weight: 600;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-box-content {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .info-box ul {
+        margin: 10px 0 0 20px;
+    }
+
+    .info-box li {
+        margin-bottom: 5px;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    @media (max-width: 768px) {
+        .header h1 {
+            font-size: 2rem;
+        }
+
+        .step-indicator {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .step::after {
+            display: none;
+        }
+
+        .download-buttons {
+            grid-template-columns: 1fr;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>📚 Bulk Book Import</h1>
+        <p>Import multiple books at once using Excel or CSV files</p>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+        <div class="step active">
+            <div class="step-number">1</div>
+            <div class="step-label">Download Template</div>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-label">Fill Data</div>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-label">Upload File</div>
+        </div>
+        <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-label">Import Books</div>
+        </div>
+    </div>
+
+    <!-- Step 1: Download Template -->
+    <div class="glass-card">
+        <h2 class="section-title">
+            📥 Step 1: Download Template
+        </h2>
+
+        <div class="download-buttons">
+            {% if excel_available %}
+            <a href="{% url 'download_book_import_template' %}?format=excel" class="btn btn-success">
+                📊 Download Excel Template
+            </a>
+            {% endif %}
+            <a href="{% url 'download_book_import_template' %}?format=csv" class="btn btn-info">
+                📄 Download CSV Template
+            </a>
+        </div>
+
+        <div class="info-box">
+            <div class="info-box-title">
+                ℹ️ Template Information
+            </div>
+            <div class="info-box-content">
+                The template includes:
+                <ul>
+                    <li><strong>Instructions</strong> - Read carefully before filling</li>
+                    <li><strong>Headers</strong> - Column names (don't modify)</li>
+                    <li><strong>Sample Data</strong> - Example row to guide you</li>
+                    <li><strong>Required Fields</strong> - Name, Author, Price, Quantity</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: Fill Data (Instructions) -->
+    <div class="glass-card">
+        <h2 class="section-title">
+            ✏️ Step 2: Fill Your Data
+        </h2>
+
+        <div class="info-box">
+            <div class="info-box-title">
+                📝 How to Fill the Template
+            </div>
+            <div class="info-box-content">
+                <strong>Required Fields:</strong>
+                <ul>
+                    <li><strong>name</strong> - Book title</li>
+                    <li><strong>author</strong> - Author name</li>
+                    <li><strong>price</strong> - Price in BDT (numbers only, e.g., 850.00)</li>
+                    <li><strong>quantity</strong> - Total number of copies</li>
+                </ul>
+
+                <strong style="margin-top: 15px; display: block;">Category Options:</strong>
+                <ul>
+                    <li>fiction, non_fiction, science, mathematics, history, geography, literature, biography, reference, other</li>
+                </ul>
+
+                <strong style="margin-top: 15px; display: block;">Tips:</strong>
+                <ul>
+                    <li>Delete the instruction row before uploading</li>
+                    <li>Delete the sample data row</li>
+                    <li>Leave <code>available_quantity</code> same as <code>quantity</code> for new books</li>
+                    <li>Use consistent date format: YYYY (e.g., 2024)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Upload File -->
+    <div class="glass-card">
+        <h2 class="section-title">
+            ⬆️ Step 3: Upload Your File
+        </h2>
+
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="preview">
+
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Click to browse or drag & drop your file here</div>
+                <div class="upload-hint">Supported formats: Excel (.xlsx) or CSV (.csv)</div>
+                <input type="file" name="file" id="fileInput" class="file-input" accept=".xlsx,.csv" required>
+            </div>
+
+            <div class="selected-file" id="selectedFile"></div>
+
+            <div class="button-group">
+                <a href="{% url 'book_list' %}" class="btn btn-secondary">
+                    ← Cancel
+                </a>
+                <button type="submit" class="btn btn-success" id="uploadBtn" disabled>
+                    👁️ Preview & Validate
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const selectedFile = document.getElementById('selectedFile');
+    const uploadBtn = document.getElementById('uploadBtn');
+
+    // Click to upload
+    uploadArea.addEventListener('click', function(e) {
+        if (e.target === fileInput) return;
+        fileInput.click();
+    });
+
+    // File selected
+    fileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            selectedFile.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>✓ ${file.name} (${sizeMB} MB)</span>
+                    <span style="color: #4ade80;">Ready to upload</span>
+                </div>
+            `;
+            selectedFile.style.display = 'block';
+            uploadBtn.disabled = false;
+        } else {
+            selectedFile.style.display = 'none';
+            uploadBtn.disabled = true;
+        }
+    });
+
+    // Drag and drop
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('drag-over');
+    });
+
+    uploadArea.addEventListener('dragleave', function() {
+        this.classList.remove('drag-over');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            fileInput.files = e.dataTransfer.files;
+            const event = new Event('change');
+            fileInput.dispatchEvent(event);
+        }
+    });
+
+    // Form submission
+    document.getElementById('uploadForm').addEventListener('submit', function() {
+        uploadBtn.innerHTML = '⏳ Processing...';
+        uploadBtn.disabled = true;
+    });
+</script>
+{% endblock %}
