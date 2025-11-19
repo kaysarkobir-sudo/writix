@@ -1,0 +1,28 @@
+<!-- Updated Transport Management Dashboard Card -->
+<div class="dashboard-card fade-in"
+     style="--gradient-start: #f97316; --gradient-end: #ea580c; animation-delay: 1s;"
+     onclick="window.location.href='{% url 'transport_panel' %}'">
+    <div>
+        <div class="card-icon">
+            🚌
+        </div>
+        <h3 class="card-title">Transport Management</h3>
+        <p class="card-description">
+            Manage school buses, routes, drivers, and student transport assignments.
+        </p>
+    </div>
+    <div class="card-stats">
+        <div class="stat-item">
+            <span class="stat-value">{{ total_buses|default:"0" }}</span>
+            <span class="stat-label">Buses</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">{{ total_routes|default:"0" }}</span>
+            <span class="stat-label">Routes</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">{{ total_transport_members|default:"0" }}</span>
+            <span class="stat-label">Students</span>
+        </div>
+    </div>
+</div>
