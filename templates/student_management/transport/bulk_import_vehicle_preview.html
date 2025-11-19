@@ -1,0 +1,398 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Preview Vehicles - Bulk Import{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.3) 0%, transparent 50%);
+        animation: backgroundPulse 15s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes backgroundPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+
+    .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
+        animation: fadeInDown 0.6s ease-out;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        margin-bottom: 10px;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        padding: 40px;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .success-banner {
+        background: rgba(34, 197, 94, 0.15);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        border-radius: 16px;
+        padding: 25px 30px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .success-icon {
+        font-size: 3rem;
+    }
+
+    .success-text h2 {
+        color: white;
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+    }
+
+    .success-text p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1rem;
+    }
+
+    .warning-box {
+        background: rgba(245, 158, 11, 0.15);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        border-radius: 12px;
+        padding: 20px 25px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .warning-box-icon {
+        font-size: 2rem;
+    }
+
+    .warning-box-text {
+        color: rgba(255, 255, 255, 0.9);
+        flex: 1;
+    }
+
+    .warning-box-text strong {
+        color: white;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .data-table-container {
+        overflow-x: auto;
+        margin: 30px 0;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 12px;
+    }
+
+    .data-table thead th {
+        color: white;
+        font-weight: 600;
+        text-align: left;
+        padding: 16px 15px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    .data-table thead th:first-child {
+        border-radius: 12px 0 0 12px;
+    }
+
+    .data-table thead th:last-child {
+        border-radius: 0 12px 12px 0;
+    }
+
+    .data-table tbody tr {
+        background: rgba(255, 255, 255, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .data-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .data-table tbody td {
+        padding: 18px 15px;
+        color: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 0.9rem;
+    }
+
+    .data-table tbody tr td:first-child {
+        border-radius: 12px 0 0 12px;
+    }
+
+    .data-table tbody tr td:last-child {
+        border-radius: 0 12px 12px 0;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 16px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .badge-success {
+        background: rgba(34, 197, 94, 0.3);
+        border: 1px solid rgba(34, 197, 94, 0.5);
+        color: #4ade80;
+    }
+
+    .badge-warning {
+        background: rgba(245, 158, 11, 0.3);
+        border: 1px solid rgba(245, 158, 11, 0.5);
+        color: #fbbf24;
+    }
+
+    .badge-danger {
+        background: rgba(239, 68, 68, 0.3);
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        color: #f87171;
+    }
+
+    .vehicle-number {
+        font-weight: 700;
+        color: #a78bfa;
+        font-family: 'Courier New', monospace;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 40px;
+    }
+
+    .btn {
+        padding: 14px 32px;
+        border-radius: 12px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+    }
+
+    .btn-secondary {
+        background: rgba(156, 163, 175, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 768px) {
+        .header h1 {
+            font-size: 2rem;
+        }
+
+        .success-banner {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .data-table {
+            font-size: 0.8rem;
+        }
+
+        .data-table thead th,
+        .data-table tbody td {
+            padding: 10px 8px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>✅ Preview Vehicles</h1>
+    </div>
+
+    <div class="glass-card">
+        <!-- Success Banner -->
+        <div class="success-banner">
+            <div class="success-icon">✅</div>
+            <div class="success-text">
+                <h2>Validation Successful!</h2>
+                <p>Found <strong>{{ total_count }}</strong> valid vehicle(s) ready to import</p>
+            </div>
+        </div>
+
+        <!-- Warning Box -->
+        <div class="warning-box">
+            <div class="warning-box-icon">⚠️</div>
+            <div class="warning-box-text">
+                <strong>Review Before Importing</strong>
+                Please carefully review all vehicle information below before confirming the import. This action cannot be undone.
+            </div>
+        </div>
+
+        <!-- Preview Table -->
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Vehicle Number</th>
+                        <th>Model</th>
+                        <th>Type</th>
+                        <th>Capacity</th>
+                        <th>Fuel Type</th>
+                        <th>Year</th>
+                        <th>Status</th>
+                        <th>Insurance Expiry</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehicle in vehicles %}
+                    <tr>
+                        <td><strong>{{ forloop.counter }}</strong></td>
+                        <td class="vehicle-number">{{ vehicle.vehicle_number }}</td>
+                        <td>{{ vehicle.vehicle_model }}</td>
+                        <td>{{ vehicle.vehicle_type|default:"Bus" }}</td>
+                        <td>{{ vehicle.capacity }} seats</td>
+                        <td>{{ vehicle.fuel_type|default:"diesel"|title }}</td>
+                        <td>{{ vehicle.manufacture_year|default:"-" }}</td>
+                        <td>
+                            <span class="badge {% if vehicle.status == 'active' or not vehicle.status %}badge-success{% elif vehicle.status == 'maintenance' %}badge-warning{% else %}badge-danger{% endif %}">
+                                {{ vehicle.status|default:"active" }}
+                            </span>
+                        </td>
+                        <td>{{ vehicle.insurance_expiry|default:"-"|date:"d M, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Import Form -->
+        <form method="post" action="{% url 'bulk_vehicle_import' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="import">
+
+            {% for vehicle in vehicles %}
+                <input type="hidden" name="vehicle_number_{{ forloop.counter0 }}" value="{{ vehicle.vehicle_number }}">
+                <input type="hidden" name="vehicle_model_{{ forloop.counter0 }}" value="{{ vehicle.vehicle_model }}">
+                <input type="hidden" name="vehicle_type_{{ forloop.counter0 }}" value="{{ vehicle.vehicle_type|default:'Bus' }}">
+                <input type="hidden" name="capacity_{{ forloop.counter0 }}" value="{{ vehicle.capacity }}">
+                <input type="hidden" name="fuel_type_{{ forloop.counter0 }}" value="{{ vehicle.fuel_type|default:'diesel' }}">
+                <input type="hidden" name="manufacture_year_{{ forloop.counter0 }}" value="{{ vehicle.manufacture_year|default:'' }}">
+                <input type="hidden" name="registration_date_{{ forloop.counter0 }}" value="{{ vehicle.registration_date|date:'Y-m-d'|default:'' }}">
+                <input type="hidden" name="insurance_expiry_{{ forloop.counter0 }}" value="{{ vehicle.insurance_expiry|date:'Y-m-d'|default:'' }}">
+                <input type="hidden" name="fitness_certificate_expiry_{{ forloop.counter0 }}" value="{{ vehicle.fitness_certificate_expiry|date:'Y-m-d'|default:'' }}">
+                <input type="hidden" name="last_service_date_{{ forloop.counter0 }}" value="{{ vehicle.last_service_date|date:'Y-m-d'|default:'' }}">
+                <input type="hidden" name="next_service_date_{{ forloop.counter0 }}" value="{{ vehicle.next_service_date|date:'Y-m-d'|default:'' }}">
+                <input type="hidden" name="status_{{ forloop.counter0 }}" value="{{ vehicle.status|default:'active' }}">
+                <input type="hidden" name="gps_device_id_{{ forloop.counter0 }}" value="{{ vehicle.gps_device_id|default:'' }}">
+                <input type="hidden" name="notes_{{ forloop.counter0 }}" value="{{ vehicle.notes|default:'' }}">
+            {% endfor %}
+
+            <div class="action-buttons">
+                <a href="{% url 'bulk_vehicle_import' %}" class="btn btn-secondary">
+                    ← Go Back
+                </a>
+                <button type="submit" class="btn btn-success">
+                    ✓ Confirm & Import {{ total_count }} Vehicle{{ total_count|pluralize }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

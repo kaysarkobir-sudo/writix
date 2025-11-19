@@ -104,6 +104,10 @@
         background: linear-gradient(135deg, #4ade80, #22c55e);
     }
 
+    .btn-info {
+        background: linear-gradient(135deg, #06b6d4, #0891b2);
+    }
+
     .btn-secondary {
         background: rgba(156, 163, 175, 0.3);
     }
@@ -187,9 +191,14 @@
             <a href="{% url 'transport_panel' %}?tab=vehicle" class="btn btn-secondary">
                 ← Back to Transport
             </a>
-            <a href="{% url 'vehicle_add' %}" class="btn btn-success">
-                ➕ Add New Vehicle
-            </a>
+            <div style="display: flex; gap: 10px;">
+                <a href="{% url 'vehicle_add' %}" class="btn btn-success">
+                    ➕ Add New Vehicle
+                </a>
+                <a href="{% url 'bulk_vehicle_import' %}" class="btn btn-info">
+                    📊 Bulk Import
+                </a>
+            </div>
         </div>
 
         <div class="vehicle-grid">
