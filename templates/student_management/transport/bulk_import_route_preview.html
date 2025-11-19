@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Preview Routes - Bulk Import{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.3) 0%, transparent 50%);
+        animation: backgroundPulse 15s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes backgroundPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+
+    .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
+        animation: fadeInDown 0.6s ease-out;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        margin-bottom: 10px;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        padding: 40px;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .success-banner {
+        background: rgba(34, 197, 94, 0.15);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        border-radius: 16px;
+        padding: 25px 30px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .success-icon {
+        font-size: 3rem;
+    }
+
+    .success-text h2 {
+        color: white;
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+    }
+
+    .success-text p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1rem;
+    }
+
+    .warning-box {
+        background: rgba(245, 158, 11, 0.15);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        border-radius: 12px;
+        padding: 20px 25px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .warning-box-icon {
+        font-size: 2rem;
+    }
+
+    .warning-box-text {
+        color: rgba(255, 255, 255, 0.9);
+        flex: 1;
+    }
+
+    .warning-box-text strong {
+        color: white;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .data-table-container {
+        overflow-x: auto;
+        margin: 30px 0;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 12px;
+    }
+
+    .data-table thead th {
+        color: white;
+        font-weight: 600;
+        text-align: left;
+        padding: 16px 15px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    .data-table thead th:first-child {
+        border-radius: 12px 0 0 12px;
+    }
+
+    .data-table thead th:last-child {
+        border-radius: 0 12px 12px 0;
+    }
+
+    .data-table tbody tr {
+        background: rgba(255, 255, 255, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .data-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .data-table tbody td {
+        padding: 18px 15px;
+        color: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 0.9rem;
+    }
+
+    .data-table tbody tr td:first-child {
+        border-radius: 12px 0 0 12px;
+    }
+
+    .data-table tbody tr td:last-child {
+        border-radius: 0 12px 12px 0;
+    }
+
+    .route-name {
+        font-weight: 700;
+        color: white;
+    }
+
+    .route-path {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .route-arrow {
+        color: #4ade80;
+        font-weight: 700;
+    }
+
+    .fare-amount {
+        font-weight: 700;
+        color: #4ade80;
+        font-size: 1.05rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 40px;
+    }
+
+    .btn {
+        padding: 14px 32px;
+        border-radius: 12px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+    }
+
+    .btn-secondary {
+        background: rgba(156, 163, 175, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 768px) {
+        .header h1 {
+            font-size: 2rem;
+        }
+
+        .success-banner {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .data-table {
+            font-size: 0.8rem;
+        }
+
+        .data-table thead th,
+        .data-table tbody td {
+            padding: 10px 8px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>✅ Preview Routes</h1>
+    </div>
+
+    <div class="glass-card">
+        <!-- Success Banner -->
+        <div class="success-banner">
+            <div class="success-icon">✅</div>
+            <div class="success-text">
+                <h2>Validation Successful!</h2>
+                <p>Found <strong>{{ total_count }}</strong> valid route(s) ready to import</p>
+            </div>
+        </div>
+
+        <!-- Warning Box -->
+        <div class="warning-box">
+            <div class="warning-box-icon">⚠️</div>
+            <div class="warning-box-text">
+                <strong>Review Before Importing</strong>
+                Please carefully review all route information below before confirming the import. This action cannot be undone.
+            </div>
+        </div>
+
+        <!-- Preview Table -->
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Route Name</th>
+                        <th>Route Path</th>
+                        <th>Monthly Fare</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for route in routes %}
+                    <tr>
+                        <td><strong>{{ forloop.counter }}</strong></td>
+                        <td class="route-name">{{ route.name }}</td>
+                        <td>
+                            <div class="route-path">
+                                <span>{{ route.start_point }}</span>
+                                <span class="route-arrow">→</span>
+                                <span>{{ route.end_point }}</span>
+                            </div>
+                        </td>
+                        <td class="fare-amount">৳{{ route.fare }}</td>
+                        <td>{{ route.note|default:"-"|truncatewords:8 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Import Form -->
+        <form method="post" action="{% url 'bulk_route_import' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="import">
+
+            {% for route in routes %}
+                <input type="hidden" name="name_{{ forloop.counter0 }}" value="{{ route.name }}">
+                <input type="hidden" name="start_point_{{ forloop.counter0 }}" value="{{ route.start_point }}">
+                <input type="hidden" name="end_point_{{ forloop.counter0 }}" value="{{ route.end_point }}">
+                <input type="hidden" name="fare_{{ forloop.counter0 }}" value="{{ route.fare }}">
+                <input type="hidden" name="note_{{ forloop.counter0 }}" value="{{ route.note|default:'' }}">
+            {% endfor %}
+
+            <div class="action-buttons">
+                <a href="{% url 'bulk_route_import' %}" class="btn btn-secondary">
+                    ← Go Back
+                </a>
+                <button type="submit" class="btn btn-success">
+                    ✓ Confirm & Import {{ total_count }} Route{{ total_count|pluralize }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
