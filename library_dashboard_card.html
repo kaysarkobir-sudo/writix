@@ -1,0 +1,22 @@
+<!-- Library Management Card - Drop-in replacement -->
+<div class="dashboard-card fade-in" style="--gradient-start: #84cc16; --gradient-end: #65a30d; animation-delay: 0.9s;" onclick="window.location.href='{% url 'library_panel' %}'">
+    <div>
+        <div class="card-icon">
+            📖
+        </div>
+        <h3 class="card-title">Library Management</h3>
+        <p class="card-description">
+            Manage books, track borrowing, handle returns, and maintain library records.
+        </p>
+    </div>
+    <div class="card-stats">
+        <div class="stat-item">
+            <span class="stat-value">{{ total_books|default:"0" }}</span>
+            <span class="stat-label">Books</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">{{ issued_books|default:"0" }}</span>
+            <span class="stat-label">Issued</span>
+        </div>
+    </div>
+</div>
