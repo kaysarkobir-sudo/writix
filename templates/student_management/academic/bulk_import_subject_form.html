@@ -1,0 +1,501 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bulk Import Subjects{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.3) 0%, transparent 50%);
+        animation: backgroundPulse 15s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes backgroundPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+
+    .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
+        animation: fadeInDown 0.6s ease-out;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        margin-bottom: 10px;
+    }
+
+    .header p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.1rem;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        padding: 40px;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .progress-steps::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.2);
+        z-index: 0;
+    }
+
+    .step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        margin: 0 auto 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+
+    .step.active .step-circle {
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+        border-color: #4ade80;
+        box-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+    }
+
+    .step-label {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+    }
+
+    .step.active .step-label {
+        color: white;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+
+    .info-box h3 {
+        color: white;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .info-box ul {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .info-box li {
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 10px;
+        padding-left: 25px;
+        position: relative;
+        line-height: 1.6;
+    }
+
+    .info-box li::before {
+        content: '→';
+        position: absolute;
+        left: 0;
+        color: #4ade80;
+        font-weight: 700;
+    }
+
+    .info-box li strong {
+        color: white;
+    }
+
+    .template-download {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+
+    .template-download h3 {
+        color: white;
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+    .download-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .upload-section {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+
+    .upload-section h3 {
+        color: white;
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+    .file-upload-area {
+        border: 2px dashed rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .file-upload-area:hover {
+        border-color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .file-upload-area.dragover {
+        border-color: #4ade80;
+        background: rgba(74, 222, 128, 0.1);
+    }
+
+    .file-upload-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+
+    .file-upload-text {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+
+    .file-upload-hint {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .selected-file {
+        margin-top: 20px;
+        padding: 15px;
+        background: rgba(74, 222, 128, 0.15);
+        border: 1px solid rgba(74, 222, 128, 0.3);
+        border-radius: 12px;
+        color: white;
+        display: none;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .selected-file.show {
+        display: flex;
+    }
+
+    .btn {
+        padding: 14px 32px;
+        border-radius: 12px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+    }
+
+    .btn-secondary {
+        background: rgba(156, 163, 175, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    @media (max-width: 768px) {
+        .header h1 {
+            font-size: 2rem;
+        }
+
+        .progress-steps {
+            flex-wrap: wrap;
+        }
+
+        .step {
+            flex: 0 0 50%;
+            margin-bottom: 20px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .download-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>📖 Bulk Import Subjects</h1>
+        <p>Upload Excel or CSV file to import multiple subjects at once</p>
+    </div>
+
+    <div class="glass-card">
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+            <div class="step active">
+                <div class="step-circle">1</div>
+                <div class="step-label">Download Template</div>
+            </div>
+            <div class="step">
+                <div class="step-circle">2</div>
+                <div class="step-label">Fill Data</div>
+            </div>
+            <div class="step">
+                <div class="step-circle">3</div>
+                <div class="step-label">Upload File</div>
+            </div>
+            <div class="step">
+                <div class="step-circle">4</div>
+                <div class="step-label">Preview & Import</div>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            <h3>📋 Required Information</h3>
+            <ul>
+                <li><strong>name:</strong> Subject name (e.g., "Mathematics", "English") (required)</li>
+                <li><strong>code:</strong> (Optional) Subject code (e.g., "MATH101", "ENG201")</li>
+                <li><strong>description:</strong> (Optional) Subject description</li>
+                <li><strong>subject_type:</strong> (Optional) Theory, Practical, Lab, or Both (default: Theory)</li>
+                <li><strong>is_active:</strong> (Optional) Use "true" or "false" (default: true)</li>
+            </ul>
+        </div>
+
+        <!-- Template Download -->
+        <div class="template-download">
+            <h3>📥 Step 1: Download Template</h3>
+            <div class="download-buttons">
+                {% if excel_available %}
+                <a href="{% url 'download_subject_import_template' %}?format=excel" class="btn btn-success">
+                    📊 Download Excel Template (.xlsx)
+                </a>
+                {% endif %}
+                <a href="{% url 'download_subject_import_template' %}?format=csv" class="btn btn-primary">
+                    📄 Download CSV Template (.csv)
+                </a>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <h3>📤 Step 2 & 3: Fill Template & Upload File</h3>
+
+            <form method="post" enctype="multipart/form-data" id="uploadForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="preview">
+
+                <div class="file-upload-area" id="dropZone">
+                    <div class="file-upload-icon">📁</div>
+                    <div class="file-upload-text">
+                        Click to browse or drag and drop your file here
+                    </div>
+                    <div class="file-upload-hint">
+                        Supported formats: Excel (.xlsx, .xls) or CSV (.csv)
+                    </div>
+                    <input type="file" name="subject_file" id="fileInput" class="file-input" accept=".xlsx,.xls,.csv" required>
+                </div>
+
+                <div class="selected-file" id="selectedFile">
+                    <span>📎</span>
+                    <span id="fileName"></span>
+                    <span style="margin-left: auto; cursor: pointer;" onclick="clearFile()">❌</span>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="{% url 'subject_list' %}" class="btn btn-secondary">
+                        ← Back to Subjects
+                    </a>
+                    <button type="submit" class="btn btn-success" id="submitBtn" disabled>
+                        ✓ Preview & Validate
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const selectedFile = document.getElementById('selectedFile');
+    const fileName = document.getElementById('fileName');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Click to browse
+    dropZone.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // File selected
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            fileName.textContent = file.name;
+            selectedFile.classList.add('show');
+            submitBtn.disabled = false;
+        }
+    });
+
+    // Drag and drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+
+        if (e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            const file = e.dataTransfer.files[0];
+            fileName.textContent = file.name;
+            selectedFile.classList.add('show');
+            submitBtn.disabled = false;
+        }
+    });
+
+    // Clear file
+    function clearFile() {
+        fileInput.value = '';
+        selectedFile.classList.remove('show');
+        submitBtn.disabled = true;
+    }
+</script>
+{% endblock %}

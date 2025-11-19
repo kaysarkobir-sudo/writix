@@ -1,0 +1,366 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Import Errors - Bulk Subject Import{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.3) 0%, transparent 50%);
+        animation: backgroundPulse 15s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes backgroundPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+
+    .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
+        animation: fadeInDown 0.6s ease-out;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        margin-bottom: 10px;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        padding: 40px;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .error-banner {
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 16px;
+        padding: 30px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .error-icon {
+        font-size: 3.5rem;
+    }
+
+    .error-text h2 {
+        color: white;
+        font-size: 1.6rem;
+        margin-bottom: 10px;
+    }
+
+    .error-text p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .success-info {
+        background: rgba(34, 197, 94, 0.15);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        color: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .success-info-icon {
+        font-size: 1.5rem;
+    }
+
+    .error-list-container {
+        margin: 30px 0;
+    }
+
+    .error-list-title {
+        color: white;
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .error-list {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 25px;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .error-list ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .error-item {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 8px;
+        padding: 12px 15px;
+        margin-bottom: 12px;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .error-item::before {
+        content: '⚠️';
+        flex-shrink: 0;
+    }
+
+    .info-box {
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        padding: 25px;
+        margin-top: 30px;
+    }
+
+    .info-box h4 {
+        color: white;
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-box ul {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .info-box li {
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 10px;
+        padding-left: 25px;
+        position: relative;
+        line-height: 1.6;
+    }
+
+    .info-box li::before {
+        content: '💡';
+        position: absolute;
+        left: 0;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 40px;
+    }
+
+    .btn {
+        padding: 14px 32px;
+        border-radius: 12px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+
+    .btn-secondary {
+        background: rgba(156, 163, 175, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Scrollbar styling */
+    .error-list::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    .error-list::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+
+    .error-list::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+    }
+
+    .error-list::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    @media (max-width: 768px) {
+        .header h1 {
+            font-size: 2rem;
+        }
+
+        .error-banner {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>❌ Import Validation Errors</h1>
+    </div>
+
+    <div class="glass-card">
+        <!-- Error Banner -->
+        <div class="error-banner">
+            <div class="error-icon">❌</div>
+            <div class="error-text">
+                <h2>Import Failed - {{ total_errors }} Error{{ total_errors|pluralize }} Found</h2>
+                <p>Please fix the errors listed below and try uploading again. Each error shows the specific row number and issue.</p>
+            </div>
+        </div>
+
+        <!-- Success Info (if any subjects were valid) -->
+        {% if success_count > 0 %}
+        <div class="success-info">
+            <div class="success-info-icon">✓</div>
+            <div>
+                <strong>{{ success_count }}</strong> subject{{ success_count|pluralize }} validated successfully, but cannot be imported until all errors are fixed.
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Error List -->
+        <div class="error-list-container">
+            <div class="error-list-title">
+                <span>📋</span>
+                <span>Detailed Error Report:</span>
+            </div>
+
+            <div class="error-list">
+                <ul>
+                    {% for error in errors %}
+                    <li class="error-item">
+                        {{ error }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Help Information -->
+        <div class="info-box">
+            <h4>💡 How to Fix These Errors:</h4>
+            <ul>
+                <li><strong>Subject name errors:</strong> Subject names are required. Use clear, descriptive names like "Mathematics", "English", "Physics".</li>
+                <li><strong>Duplicate name errors:</strong> Subject names must be unique within your institution. Use different names or update existing subjects.</li>
+                <li><strong>Duplicate code errors:</strong> If provided, subject codes must be unique (e.g., "MATH101", "ENG201").</li>
+                <li><strong>Subject type errors:</strong> Use only: Theory, Practical, Lab, or Both. Leave blank for Theory (default).</li>
+                <li><strong>is_active errors:</strong> Use "true" or "false" only. Leave blank to default to "true".</li>
+                <li><strong>Row numbers:</strong> The row number corresponds to the row in your uploaded file (including header rows)</li>
+            </ul>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{% url 'subject_list' %}" class="btn btn-secondary">
+                ← Back to Subjects
+            </a>
+            <a href="{% url 'download_subject_import_template' %}?format=excel" class="btn btn-primary">
+                📥 Download Fresh Template
+            </a>
+            <a href="{% url 'bulk_subject_import' %}" class="btn btn-primary">
+                🔄 Try Again
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
