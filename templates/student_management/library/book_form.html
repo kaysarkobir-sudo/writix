@@ -1,0 +1,460 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.3) 0%, transparent 50%);
+        animation: backgroundPulse 15s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes backgroundPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+
+    .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        padding: 40px;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-section {
+        margin-bottom: 35px;
+    }
+
+    .section-title {
+        color: white;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 25px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        display: block;
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin-bottom: 10px;
+    }
+
+    .form-label.required::after {
+        content: ' *';
+        color: #fbbf24;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        width: 100%;
+        padding: 14px 18px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        color: white;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    }
+
+    .form-select option {
+        background: #764ba2;
+        color: white;
+    }
+
+    .form-textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .file-upload-wrapper {
+        position: relative;
+    }
+
+    .file-upload-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 18px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 2px dashed rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        color: rgba(255, 255, 255, 0.8);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .file-upload-label:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .file-upload-input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .file-name {
+        margin-top: 8px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 40px;
+    }
+
+    .btn {
+        padding: 14px 35px;
+        border-radius: 12px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+    }
+
+    .btn-secondary {
+        background: rgba(156, 163, 175, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .help-text {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.85rem;
+        margin-top: 5px;
+        font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+        .form-row { grid-template-columns: 1fr; }
+        .button-group { flex-direction: column; }
+        .btn { width: 100%; justify-content: center; }
+        .header h1 { font-size: 2rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>📚 {{ title }}</h1>
+    </div>
+
+    <div class="glass-card">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Basic Information -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    📖 Basic Information
+                </h2>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_name" class="form-label required">Book Title</label>
+                        {{ form.name }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_author" class="form-label required">Author</label>
+                        {{ form.author }}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_publisher" class="form-label">Publisher</label>
+                        {{ form.publisher }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_isbn" class="form-label">ISBN</label>
+                        {{ form.isbn }}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_edition" class="form-label">Edition</label>
+                        {{ form.edition }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_publication_year" class="form-label">Publication Year</label>
+                        {{ form.publication_year }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categorization -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    🏷️ Categorization
+                </h2>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_category" class="form-label">Category</label>
+                        {{ form.category }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_subject_code" class="form-label">Subject Code</label>
+                        {{ form.subject_code }}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_language" class="form-label">Language</label>
+                        {{ form.language }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_pages" class="form-label">Number of Pages</label>
+                        {{ form.pages }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Physical Details -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    📦 Physical Details & Location
+                </h2>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_price" class="form-label required">Price (৳)</label>
+                        {{ form.price }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_quantity" class="form-label required">Total Quantity</label>
+                        {{ form.quantity }}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_available_quantity" class="form-label">Available Quantity</label>
+                        {{ form.available_quantity }}
+                        <div class="help-text">Auto-updated on issue/return</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_rack_no" class="form-label">Rack Number</label>
+                        {{ form.rack_no }}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_shelf_location" class="form-label">Shelf Location</label>
+                        {{ form.shelf_location }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_barcode" class="form-label">Barcode</label>
+                        {{ form.barcode }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    ℹ️ Additional Information
+                </h2>
+
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="id_description" class="form-label">Description</label>
+                        {{ form.description }}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_cover_image" class="form-label">Cover Image</label>
+                        <div class="file-upload-wrapper">
+                            {{ form.cover_image }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_date_added" class="form-label">Date Added</label>
+                        {{ form.date_added }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-group">
+                <a href="{% url 'book_list' %}" class="btn btn-secondary">
+                    ← Cancel
+                </a>
+                <button type="submit" class="btn btn-success">
+                    💾 Save Book
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Add CSS classes to form fields
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('input[type="text"], input[type="number"], input[type="date"]').forEach(field => {
+            field.classList.add('form-input');
+        });
+
+        document.querySelectorAll('select').forEach(field => {
+            field.classList.add('form-select');
+        });
+
+        document.querySelectorAll('textarea').forEach(field => {
+            field.classList.add('form-textarea');
+        });
+
+        // Handle file input styling
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput) {
+            fileInput.classList.add('file-upload-input');
+
+            // Create custom file upload button
+            const wrapper = fileInput.parentElement;
+            const label = document.createElement('label');
+            label.className = 'file-upload-label';
+            label.innerHTML = '📁 Choose Cover Image';
+
+            const fileName = document.createElement('div');
+            fileName.className = 'file-name';
+
+            wrapper.insertBefore(label, fileInput);
+            wrapper.appendChild(fileName);
+
+            label.addEventListener('click', () => fileInput.click());
+
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    fileName.textContent = '✓ ' + this.files[0].name;
+                } else {
+                    fileName.textContent = '';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
