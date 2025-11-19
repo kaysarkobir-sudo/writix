@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.3) 0%, transparent 50%);
+        animation: backgroundPulse 15s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes backgroundPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+
+    .container {
+        position: relative;
+        z-index: 1;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        padding: 40px;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        display: block;
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin-bottom: 10px;
+    }
+
+    .form-label.required::after {
+        content: ' *';
+        color: #fbbf24;
+    }
+
+    .form-input,
+    .form-textarea {
+        width: 100%;
+        padding: 14px 18px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        color: white;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    }
+
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .file-upload-area {
+        border: 2px dashed rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        padding: 50px 20px;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.08);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .file-upload-area:hover {
+        border-color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .upload-icon {
+        font-size: 4rem;
+        margin-bottom: 15px;
+    }
+
+    .upload-text {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+    }
+
+    .upload-hint {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+    }
+
+    .file-input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        cursor: pointer;
+    }
+
+    .selected-file {
+        margin-top: 15px;
+        padding: 15px;
+        background: rgba(74, 222, 128, 0.15);
+        border: 1px solid rgba(74, 222, 128, 0.3);
+        border-radius: 10px;
+        color: #4ade80;
+        font-weight: 600;
+        display: none;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 40px;
+    }
+
+    .btn {
+        padding: 14px 35px;
+        border-radius: 12px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+    }
+
+    .btn-secondary {
+        background: rgba(156, 163, 175, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .current-file {
+        margin-top: 10px;
+        padding: 12px;
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 10px;
+        color: #60a5fa;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .button-group { flex-direction: column; }
+        .btn { width: 100%; justify-content: center; }
+        .header h1 { font-size: 2rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>💾 {{ title }}</h1>
+    </div>
+
+    <div class="glass-card">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Title -->
+            <div class="form-group">
+                <label for="title" class="form-label required">E-Book Title</label>
+                <input type="text" id="title" name="title" class="form-input" placeholder="Enter e-book title" value="{{ ebook.title|default:'' }}" required>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label for="description" class="form-label">Description</label>
+                <textarea id="description" name="description" class="form-textarea" placeholder="Brief description or summary of the e-book">{{ ebook.description|default:'' }}</textarea>
+            </div>
+
+            <!-- File Upload -->
+            <div class="form-group">
+                <label class="form-label {% if not ebook %}required{% endif %}">E-Book File</label>
+
+                {% if ebook and ebook.file %}
+                <div class="current-file">
+                    📄 Current file: {{ ebook.file.name|default:"Uploaded file" }}
+                </div>
+                <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin: 10px 0;">
+                    Upload a new file to replace the current one
+                </p>
+                {% endif %}
+
+                <div class="file-upload-area" id="fileUploadArea">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text">Click to browse or drag & drop your e-book file</div>
+                    <div class="upload-hint">Supported formats: PDF, EPUB, MOBI, TXT (Max 50MB)</div>
+                    <input type="file" name="file" id="file" class="file-input" {% if not ebook %}required{% endif %}>
+                </div>
+                <div class="selected-file" id="selectedFile"></div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-group">
+                <a href="{% url 'ebook_list' %}" class="btn btn-secondary">
+                    ← Cancel
+                </a>
+                <button type="submit" class="btn btn-success">
+                    💾 Save E-Book
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // File upload handling
+    const fileInput = document.getElementById('file');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const selectedFile = document.getElementById('selectedFile');
+
+    // Click to upload
+    fileUploadArea.addEventListener('click', function(e) {
+        if (e.target === fileInput) return;
+        fileInput.click();
+    });
+
+    // File selected
+    fileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            selectedFile.textContent = `✓ ${file.name} (${sizeMB} MB)`;
+            selectedFile.style.display = 'block';
+        } else {
+            selectedFile.style.display = 'none';
+        }
+    });
+
+    // Drag and drop
+    fileUploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#4ade80';
+        this.style.background = 'rgba(74, 222, 128, 0.1)';
+    });
+
+    fileUploadArea.addEventListener('dragleave', function() {
+        this.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+        this.style.background = 'rgba(255, 255, 255, 0.08)';
+    });
+
+    fileUploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+        this.style.background = 'rgba(255, 255, 255, 0.08)';
+
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            fileInput.files = e.dataTransfer.files;
+            const event = new Event('change');
+            fileInput.dispatchEvent(event);
+        }
+    });
+</script>
+{% endblock %}
