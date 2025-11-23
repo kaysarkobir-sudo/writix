@@ -571,10 +571,19 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // FIXED: Store chart instances globally and destroy before recreating
+        let dataTypeChartInstance = null;
+        let countryChartInstance = null;
+
         // Data Type Chart
         const dataTypeCtx = document.getElementById('dataTypeChart');
         if (dataTypeCtx) {
-            new Chart(dataTypeCtx.getContext('2d'), {
+            // Destroy existing chart instance if it exists
+            if (dataTypeChartInstance) {
+                dataTypeChartInstance.destroy();
+            }
+
+            dataTypeChartInstance = new Chart(dataTypeCtx.getContext('2d'), {
                 type: 'doughnut',
                 data: {
                     labels: [
@@ -616,7 +625,12 @@
         // Country Chart
         const countryCtx = document.getElementById('countryChart');
         if (countryCtx) {
-            new Chart(countryCtx.getContext('2d'), {
+            // Destroy existing chart instance if it exists
+            if (countryChartInstance) {
+                countryChartInstance.destroy();
+            }
+
+            countryChartInstance = new Chart(countryCtx.getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: [
